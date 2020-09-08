@@ -1,0 +1,5 @@
+.idea
+/data/chunk/*
+/data/temp/*
+/docs/shell/
+/deploy/

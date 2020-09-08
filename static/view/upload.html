@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>普通上传</title>
+    <link rel="icon" href="data:;base64,=">
+    <script src="/static/js/auth.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://s3.pstatp.com/cdn/expire-1-M/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body style="width:100%;height:100%;text-align:center;">
+    <div id="username" style="display: none" username="{{ .username }}"></div>
+    <div id="token" style="display: none" token="{{ .token }}"></div>
+    <div id="ip" style="display: none" ip="{{ .ip }}"></div>
+    <div style="width:100%;height:100%;margin:0 0 10px 0;text-align: center;">
+        <div style="font-size:20px;font-weight:bold;color:#ddd;
+          margin:0;padding-top:3px;background:#383e4b;height:40px;">
+            <a href="#" style="float: left;margin-left: 10px;color: #5cb85c" onclick="toHome()">首页</a>
+            文件上传
+        </div>
+		<h1>建议上传小文件测试，带宽太小，大文件非常慢</h1>
+        <div style="width:60%;height:30%;text-align:center;margin: 50px auto;">
+            <form id="upForm" enctype="multipart/form-data">
+                <input id="file" type="file" name="file" />
+            </form>
+            <div><button type="button" onclick="onUpload()" style="float: left;margin-top: 10px">上传</button></div>
+        </div>
+        <h1 style="display: none">上传中...</h1>
+    </div>
+</body>
+<script>
+    function onUpload() {
+        $("h1").removeAttr("style");
+        let username = $("#username").attr("username");
+        let token = $("#token").attr("token");
+        let ip = $("#ip").attr("ip");
+        localStorage.setItem("username", username);
+        localStorage.setItem("token", token);
+        localStorage.setItem("ip", ip);
+        let authParams = "?username=" + username + "&token=" + token;
+        let upUrl = "/file/upload" + authParams;
+        $.ajax({
+            url: upUrl,
+            type: "POST",
+            cache: false,
+            data: new FormData($("#upForm")[0]),
+            processData: false,
+            contentType: false,
+            success: function (resp) {
+                if (resp["code"] > 0) {
+                    location.href = "http://" + ip + ":8080" + authParams;
+                } else {
+                    alert(resp["msg"]);
+                }
+            }
+        })
+    }
+
+    function toHome() {
+        let username = localStorage.getItem("username");
+        let token = localStorage.getItem("token");
+        let ip = localStorage.getItem("ip");
+        let authParams = "?username=" + username + "&token=" + token;
+        let homeUrl = "http://" + ip + ":8080" + authParams;
+        location.href = homeUrl
+    }
+</script>
+</html>

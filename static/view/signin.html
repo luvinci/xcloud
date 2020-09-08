@@ -1,0 +1,87 @@
+<html lang="zh-CN"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>登陆</title>
+    <link rel="icon" href="data:;base64,=">
+    <script src="https://s3.pstatp.com/cdn/expire-1-M/jquery/3.3.1/jquery.min.js"></script>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media (max-width: 2000px) {
+            .form-signin {
+                margin-top: 80px;
+            }
+        }
+        @media (max-width: 768px) {
+            .form-signin {
+                margin-top: 140px;
+            }
+        }
+        #username,
+        #password,
+        .btn {
+            margin-top: 20px;
+        }
+        #reg {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div id="navbar" class="navbar-collapse collapse" aria-expanded="false" style="height: 1px;">
+            <ul class="nav navbar-nav">
+                <li><a href="https://www.cnblogs.com/believepd">About Me</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container">
+
+    <form class="form-signin">
+        <h2 class="form-signin-heading">请登录</h2>
+        <label for="inputUsername" class="sr-only">Username</label>
+        <input type="text" id="username" class="form-control" placeholder="Username" required="" autofocus="" autocomplete="off">
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" id="password" class="form-control" placeholder="Password" required="" autocomplete="off">
+        <button class="btn btn-lg btn-primary btn-block" type="button" onclick="OnSignin()">登陆</button>
+        <div id="reg"><a href="/user/signup">没有账号，前往注册。</a></div>
+    </form>
+
+</div> <!-- /container -->
+
+</body>
+<script>
+    function OnSignin() {
+        let username = $("#username").val();
+        let password = $("#password").val();
+        $.ajax({
+            url: "/user/signin",
+            type: "POST",
+            data: {
+                "username": username,
+                "password": password,
+            },
+            success: function (resp) {
+                if (resp["code"] < 0) {
+                    if (resp["msg"] instanceof Array) {
+                        alert(resp["msg"][0])
+                    } else {
+                        alert(resp["msg"])
+                    }
+                    return
+                }
+                let username = resp["data"]["username"];
+                let token = resp["data"]["token"];
+                localStorage.setItem("username", username);
+                localStorage.setItem("token", token);
+                window.location.href = resp["data"]["location"] + "?username=" + username + "&token=" + token;
+            }
+        })
+    }
+</script>
+</html>

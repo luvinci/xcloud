@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+    <link rel="icon" href="data:;base64,=">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://s3.pstatp.com/cdn/expire-1-M/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <style>
+        .f:after {
+            content: "";
+            display: block;
+            clear: both;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        .x {
+            width: calc(50% - 52px);
+            height: 100px;
+            float: left;
+        }
+        #avatar {
+            width: 100px;
+            height: 100px;
+            border: 4px solid white;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        #avatar img {
+            width: 100px;
+            height: 100px;
+        }
+        #z {
+            padding-top: 10px;
+        }
+        .row {
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+        .col-md-3 span {
+            font-weight:bold;
+        }
+        #sign {
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="ip" style="display: none" ip="{{ .ip }}"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div style="color:cornsilk;font-size:26px;font-weight:bold;background: rgb(34, 34, 34);height:36px;text-align: center;"><a href="/user/signup" style="color: #5cb85c;float: left;margin-left: 10px">注册</a><a href="/user/signin" style="color: #5cb85c;float: left;margin-left: 10px">登陆</a>xcloud</div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-3">
+            <div style="text-align: center;height:20%;background-color: rgb(255, 114, 86)">
+                <div id="z">
+                    <div class="f">
+                        <div class="x"></div>
+                        <div id="avatar">
+                            <img src="/static/img/avatar.jpeg" alt="" />
+                        </div>
+                    </div>
+                </div>
+
+                <div><span>用户名：</span> <span id="username" style="color: seagreen"></span></div>
+                <div id="sign"><span>注册时间：</span><span id="signup_at" style="color: seagreen"></span></div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div>
+                <button class="btn btn-primary" onclick="toUploadFile()" style="margin-top: 10px">上传文件</button>
+                <button class="btn btn-primary" onclick="toFastUploadFile()" style="margin-top: 10px">尝试秒传</button>
+                <div style="font-size: 20px;text-align: center">文件列表</div>
+                <div style="width:100%;height: 1px;background:rgb(202, 157, 248);margin-top: 15px;"></div>
+            </div>
+            <div style="height:95%;width:100%;">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>文件编号</th>
+                        <th>文件名</th>
+                        <th>文件大小</th>
+                        <th>上传时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+<script>
+    function toUploadFile() {
+        let ip = $("#ip").attr("ip");
+        window.location.href = 'http://' + ip + ':28080/file/upload' + authParams();
+    }
+
+    function toFastUploadFile() {
+        let ip = $("#ip").attr("ip");
+        window.location.href = 'http://' + ip + ':28080/file/fastupload' + authParams();
+    }
+
+    window.onload = function() {
+        getUserInfo();
+        getUserFiles();
+    };
+
+    function getUserInfo() {
+        $.ajax({
+            url: "/user/info" + authParams(),
+            method: "GET",
+            success: function (resp) {
+                if (resp["code"] < 0) {
+                    alert(resp["msg"])
+                }
+                $("#username").text(resp["data"]["username"]);
+                $("#signup_at").text(resp["data"]["signup_at"]);
+            }
+        });
+    }
+
+    function getUserFiles() {
+        $.ajax({
+            url: "/user/files" + authParams(),
+            method: "POST",
+            data: {
+                "limit": 10
+            },
+            success: function (resp) {
+                if (resp["code"] < 0) {
+                    alert(resp["msg"])
+                }
+
+                let ip = $("#ip").attr("ip");
+
+                let host = "http://" + ip + ":8080";
+                let dlhost = "http://" + ip + ":38080";
+
+                let downloadHtml = '<button class="btn btn-info" ' +
+                    'style="height:30px;margin:5px 3px;"' +
+                    'onClick = "downloadFile(\'{0}\', \'{1}\', \''+ dlhost +'/file/downloadurl{2}\')">下载</button>';
+
+                let renameFileHtml = '<button class="btn btn-warning" ' +
+                    'style="height:30px;margin:5px 3px;"' +
+                    'onClick = "renameFile(\'{0}\', \'{1}\', \''+ host +'/file/rename{2}\')">改名</button>';
+
+                let deleteFileHtml = '<button class="btn btn-danger" ' +
+                    'style="height:30px;margin:5px 3px;"' +
+                    'onClick = "deleteFile(\'{0}\', \'{1}\', \''+ host +'/file/delete{2}\')">删除</button>';
+
+                let userFiles = resp["data"];
+                if (userFiles.length === 0) {
+                    return;
+                }
+                for (let i = 0; i < userFiles.length; i++) {
+                    let file_hash = userFiles[i].FileHash;
+                    let file_name = userFiles[i].FileName;
+                    let file_size = userFiles[i].FileSize;
+                    let upload_at = userFiles[i].UploadAt;
+                    let op = downloadHtml.format(file_hash, file_name, authParams()) +
+                        renameFileHtml.format(file_hash, file_name, authParams()) +
+                        deleteFileHtml.format(file_hash, file_name, authParams());
+
+                    let show_file_hash = file_hash.slice(0, 8) + "...";
+                    let show_file_size = "";
+                    let file_size_kb = parseInt(file_size/1024)
+                    let file_size_mb = parseInt(file_size/(1024*1024));
+                    if (file_size_mb <= 0) {
+                        show_file_size = file_size_kb + "k"
+                    } else {
+                        show_file_size = file_size_mb + "m"
+                    }
+
+                    let tr = `<tr>
+                                    <td>${show_file_hash}</td>
+                                    <td>${file_name}</td>
+                                    <td>${show_file_size}</td>
+                                    <td>${upload_at}</td>
+                                    <td>${op}</td>
+                             </tr>`;
+                    $("tbody").append(tr);
+                }
+            }
+        });
+    }
+
+    function downloadFile(fileHash, fileName, dlUrl) {
+        $.ajax({
+            url: dlUrl,
+            method: "POST",
+            data: {
+                "filehash": fileHash,
+                "filename": fileName,
+            },
+            success: function (resp) {
+                try {
+                    let ok = confirm("是否下载：" + fileName);
+                    if (!ok) {
+                        return false;
+                    } else {
+                        let elemIF = document.createElement("iframe");
+                        elemIF.src = resp;
+                        elemIF.style.display = "none";
+                        document.body.appendChild(elemIF);
+                    }
+                } catch (e) {
+                    alert(e);
+                }
+            }
+        });
+    }
+
+    function renameFile(fileHash, fileName, renameUrl) {
+        let newFileName = prompt("\n当前文件名: {0}\n\n请输入新的文件名(后缀忽略): ".format(fileName));
+        newFileName = newFileName.trim();
+        if (newFileName.length <= 0) {
+            alert("文件名不能为空");
+            return;
+        }
+        if (newFileName.indexOf(" ") >= 0) {
+            alert("文件名不能包含空格");
+            return;
+        }
+        $.ajax({
+            url: renameUrl,
+            method: "POST",
+            data: {
+                "filehash": fileHash,
+                "filename": fileName,
+                "newfilename": newFileName,
+            },
+            success: function (resp) {
+                if (resp["code"] < 0) {
+                    alert("文件名修改失败");
+                }
+                alert("文件名修改成功");
+                window.location.reload();
+            }
+        });
+    }
+
+    function deleteFile(fileHash, fileName, deleteUrl) {
+        let str = `您确定要删除"${fileName}"吗?`;
+        let ok = confirm(str);
+        if (ok) {
+            $.ajax({
+                url: deleteUrl,
+                method: "POST",
+                data: {
+                    "filehash": fileHash,
+                },
+                success: function (resp) {
+                    if (resp["code"] < 0) {
+                        alert("删除失败");
+                    }
+                    alert("删除成功");
+                    window.location.reload();
+                }
+            })
+        }
+    }
+</script>
+</html>

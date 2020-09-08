@@ -1,0 +1,87 @@
+<html lang="zh-CN"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>注册</title>
+    <link rel="icon" href="data:;base64,=">
+    <script src="https://s3.pstatp.com/cdn/expire-1-M/jquery/3.3.1/jquery.min.js"></script>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media (max-width: 2000px) {
+            .form-signin {
+                margin-top: 80px;
+            }
+        }
+        @media (max-width: 768px) {
+            .form-signin {
+                margin-top: 140px;
+            }
+        }
+        #username,
+        #password,
+        #confirm_password,
+        .btn {
+            margin-top: 20px;
+        }
+        #login {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div id="navbar" class="navbar-collapse collapse" aria-expanded="false" style="height: 1px;">
+            <ul class="nav navbar-nav">
+                <li><a href="https://www.cnblogs.com/believepd">About Me</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container">
+
+    <form class="form-signin">
+        <h2 class="form-signin-heading">请注册</h2>
+        <label for="username" class="sr-only">Username</label>
+        <input type="text" id="username" class="form-control" placeholder="Username" required="" autofocus="" autocomplete="off">
+        <label for="password" class="sr-only">Password</label>
+        <input type="password" id="password" class="form-control" placeholder="Password" required="" autocomplete="off">
+        <label for="confirm_password" class="sr-only">Password</label>
+        <input type="password" id="confirm_password" class="form-control" placeholder="confirm_password" required="" autocomplete="off">
+        <button class="btn btn-lg btn-primary btn-block" type="button" onclick="OnSignup()">注册</button>
+        <div id="login"><a href="/user/signin">已有账号，前往登陆。</a></div>
+    </form>
+
+</div> <!-- /container -->
+
+</body>
+<script>
+    function OnSignup() {
+        let username = $("#username").val();
+        let password = $("#password").val();
+        let confirm_password = $("#confirm_password").val();
+        if (password !== confirm_password) {
+            alert("密码不一致");
+        } else {
+            $.ajax({
+                url: "/user/signup",
+                type: "POST",
+                data: {
+                    "username": username,
+                    "password": password,
+                },
+                success: function (resp) {
+                    if (resp["code"] < 0) {
+                        alert(resp["msg"])
+                    }
+                    window.location.href = "/user/signin";
+                }
+            })
+        }
+    }
+</script>
+</html>

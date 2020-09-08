@@ -1,0 +1,16 @@
+syntax="proto3";
+
+option go_package = ".;proto";
+
+service UploadService {
+  // 获取上传入口地址
+  rpc UploadEntry(EntryReq) returns (EntryResp) {}
+}
+
+message EntryReq {}
+
+message EntryResp {
+  int32 code = 1;
+  string msg = 2;
+  string entry = 3;
+}
