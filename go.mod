@@ -18,8 +18,8 @@ require (
 	github.com/json-iterator/go v1.1.9
 	github.com/lestrrat-go/file-rotatelogs v2.3.0+incompatible // indirect
 	github.com/lestrrat-go/strftime v1.0.3 // indirect
-	github.com/luvinci/validator-zh v0.0.0-20200829021417-79309fb12552
-	github.com/luvinci/x-logrus v1.0.0
+	github.com/shisuizhe/validator-zh v0.0.0-20200829021417-79309fb12552
+	github.com/shisuizhe/x-logrus v1.0.0
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/micro/go-micro/v2 v2.9.1
 	github.com/micro/go-plugins/registry/consul/v2 v2.9.1
